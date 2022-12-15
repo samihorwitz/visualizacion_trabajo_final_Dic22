@@ -32,227 +32,7 @@ Como antecedente se registra una encuesta anterior realizada en el año 2005.
 
 datos_uso_tiempo <- read_csv("datos/encuesta_uso_tiempo_2016.csv",
                              locale = locale(encoding = "ISO-8859-1"))
-head(datos_uso_tiempo)
 ```
-
-
-
-```{r}
-## Visualizamos la cantidad de varibles, observaciones y el nombre de las variables
-
-dim(datos_uso_tiempo)
-names(datos_uso_tiempo)
-```
-
-Utilizando la función "dim()", se obtienen las dimensiones del dataframe, esto es, la cantidad de filas (2336 observaciones) y columnas (27 variables). También es posible identificar los nombres de las variables, corriendo la función "names()". 
-
-Según la guía metodológica presentada por la Dirección, encargada de recopilar y procesar los datos de la Encuesta sobre el Uso del Tiempo en la Ciudad de Buenos Aires (de aquí en más,"UT CABA") el objetivo enunciado consta de << producir información sobre el tiempo que las personas (mujeres y varones, jóvenes,personas mayores) que habitan en la Ciudad de Buenos Aires dedican cotidianamente a diferentes actividades,incluyendo el trabajo remunerado, las actividades domésticas, el cuidado de niños, niñas, personas mayores o con discapacidad, el estudio, el esparcimiento, los viajes y traslados, etc.>>
-
-Si bien la información contenida en la base de datos habilita un vasto análisis al respecto, en este primer trabajo se decidió utilizar y procesar sólo algunas variables de interés, tales como las sociodemográficas principales ("sexo", "rango_etario", "estado_ocupacional", "nivel_educativo") y las específicas de la presente encuesta ("trabajo_pago", "trabajo_domestico_no_pago" "quintil_ingreso"), con el objetivo de generar los cruces necesarios que propendan un estudio preciso del caso.
-
-
-```{r}
-##Analizamos los aspectos sociodemográficos del dataset
-
-datos_uso_tiempo %>% 
-  group_by(sexo) %>%
-  summarise(frec_sexo = n()) %>% 
-  mutate(porcentaje_sexo = frec_sexo/sum(frec_sexo)*100) %>%
-  mutate(porcentaje_sexo = round(porcentaje_sexo, digits = 1)) %>% 
-  ggplot(aes(sexo, porcentaje_sexo)) +
-  geom_col(aes(width = 0.5, fill = factor(porcentaje_sexo))) +
-  labs(title = "Gráfico 1.A) - Proporción de hombres y mujeres", 
-       x = "Sexo", 
-       y = "%") +
-  scale_fill_discrete(name = "Sexo",
-                      labels = c("Varón" , "Mujer")) +
-  geom_text(aes(label = porcentaje_sexo), position = position_stack(vjust = .5))
-
-
-datos_uso_tiempo %>% 
-  group_by(rango_etario) %>%
-  summarise(frec_edad = n()) %>% 
-  mutate(porcentaje_edad = frec_edad/sum(frec_edad)*100) %>%
-  mutate(porcentaje_edad = round(porcentaje_edad, digits = 1)) %>% 
-  ggplot(aes(rango_etario, porcentaje_edad)) + 
-  geom_col(aes(width = 0.5, fill=factor(porcentaje_edad)))+
-    labs(title = "Gráfico 1.B) - Personas según grupos etarios", 
-       x = "Grupos etarios", 
-       y = "%") +
-  scale_fill_discrete(name = "Sexo",
-                      labels = c("14-24" , "25-39", "40-49", "50-64", "65+")) +
-  geom_text(aes(label = porcentaje_edad), position = position_stack(vjust = .5))
-
-
-datos_uso_tiempo %>% 
-  group_by(estado_ocupacional) %>%
-  summarise(frec_ocup = n()) %>% 
-  mutate(porcentaje_ocup = frec_ocup/sum(frec_ocup)*100) %>%
-  mutate(porcentaje_ocup = round(porcentaje_ocup, digits = 1)) %>% 
-  ggplot(aes(estado_ocupacional, porcentaje_ocup)) + 
-  geom_col(aes(width = 0.5, fill= factor(porcentaje_ocup)))+
-  labs(title = "Gráfico 1.C) - Personas según condición de ocupación", 
-       x = "Condición de ocupación", 
-       y = "%") +
-  scale_fill_discrete(name = "Condición de ocupación",
-                      labels = c("Inactivo" , "Desocupado", "Ocupado")) +
-  geom_text(aes(label = porcentaje_ocup), position = position_stack(vjust = .5))
-
-```
-
-## Descripción preliminar de variables sociodemográficas 
-
-El universo de las personas encuestadas se ubica en un total de 2336, de las cuales 1345 son mujeres (57,6%) y 991 son varones (42,4%), habilitando únicamente respuestas binarias. En ese sentido, tal como se observa en el gráfico 1.A),la muestra se encuentra sesgada hacia el universo femenino, dado que la proporción de mujeres encuestadas supera al porcentaje de población femenina que efectivamente habita en la Ciudad de Buenos Aires, por lo que se deduce que las mujeres se encuentran en esta muestra sobrerepresentadas. 
-
-En segundo lugar, del análisis de frecuencias según rangos etáreos del gráfico 1.B) se desprende que la mayor cantidad de casos encuestados se halla en edades de entre 25 y 39 años (28,8%), seguido de personas que superan los 65 años (23,4%). En líneas generales, podemos mencionar que la distribución de la población por edades se encuentra balanceada.
-
-Finalmente, del análisis del gráfico 1.C), que devuelve la frecuencia de casos según estado ocupacional, se observa que el grueso de la muestra la componen personas ocupadas (68,8%), es decir, que actualmente cuentan con trabajo, o bien trabajaron al menos 1 hora en la semana de referencia, y en segundo lugar, personas inactivas (27,3%). Cabe aclarar dos cuestiones: en primer lugar, la condición de inactividad refiere a la pertenencia a un determinado grupo etáreo (ya sea, menores de 14 años, que no se encuentran alcanzadxs por la presente encuesta, o mayores de 65) o bien por condiciones particulares (personas con discapacidad, estudiantes, entre otros).En segundo lugar, del mismo modo que fuera señalada la sobrerrepresentación de las mujeres en esta muestra, también es posible advertir una sobrerrepresentación de las personas ocupadas.
-
-
-```{r}
-##Exploramos datos sobre cualidad laborable o no laborable del día de la encuesta
-
-datos_uso_tiempo %>% 
-  group_by (dia_laborable) %>%
-  summarise (frec_dialaborable = n()) %>%
-  mutate (porcentaje_dialaborable = frec_dialaborable/sum(frec_dialaborable)*100) %>%
-  gt(caption = "Cantidad de personas según tipo de día") %>% 
-  cols_label(dia_laborable = "Tipo de día", frec_dialaborable = "Día laborable",                         porcentaje_dialaborable = "%") %>% 
-  cols_align(align = "center", 
-             columns = frec_dialaborable) %>%  
-  fmt_number(columns = porcentaje_dialaborable, 
-             decimals = 1, dec_mark = ",", sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", weight = px(3)),
-            cell_text(weight = "bold")))
-
-datos_uso_tiempo %>% 
-  filter(sexo == "Mujer") %>%
-  group_by (dia_laborable) %>%
-  summarise (frec_dialaborable = n()) %>%
-  mutate (porcentaje_dialaborable = frec_dialaborable/sum(frec_dialaborable)*100) %>%
-  gt(caption = "Cantidad de mujeres según tipo de día") %>% 
-  cols_label(dia_laborable = "Tipo de día", frec_dialaborable = "Día laborable",                         porcentaje_dialaborable = "%") %>% 
-  cols_align(align = "center", 
-             columns = frec_dialaborable) %>%  
-  fmt_number(columns = porcentaje_dialaborable, 
-             decimals = 1, dec_mark = ",", sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", weight = px(3)),
-            cell_text(weight = "bold")))
-
-datos_uso_tiempo %>% 
-  filter(sexo == "Varon") %>%
-  group_by (dia_laborable) %>%
-  summarise (frec_dialaborable = n()) %>%
-  mutate (porcentaje_dialaborable = frec_dialaborable/sum(frec_dialaborable)*100) %>%
-  gt(caption = "Cantidad de varones según tipo de día") %>% 
-  cols_label(dia_laborable = "Tipo de día", frec_dialaborable = "Día laborable",                         porcentaje_dialaborable = "%") %>% 
-  cols_align(align = "center", 
-             columns = frec_dialaborable) %>%  
-  fmt_number(columns = porcentaje_dialaborable, 
-             decimals = 1, dec_mark = ",", sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", weight = px(3)),
-            cell_text(weight = "bold")))
-
-datos_uso_tiempo %>% 
-  filter(estado_ocupacional == "Ocupado") %>%
-  group_by (sexo, dia_laborable) %>%
-  summarise (frec_trabajo = n()) %>%
-  mutate (porcentaje_trabajo = frec_trabajo/sum(frec_trabajo)*100) %>% 
-  gt(caption = "Cantidad de personas que trabajaron según tipo de día") %>% 
-  cols_label(dia_laborable = "Sexo/Tipo de día", frec_trabajo = "Cantidad",                         porcentaje_trabajo = "%") %>% 
-  cols_align(align = "center", 
-             columns = frec_trabajo) %>%  
-  fmt_number(columns = porcentaje_trabajo, 
-             decimals = 1, dec_mark = ",", sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", weight = px(3)),
-            cell_text(weight = "bold")))
-
-```
-
-## Descripción de la exploración de datos sobre cualidad laborable/no laborable del día de la encuesta
-
-Como hemos señalado previamente, nos enfocaremos en el análisis de los datos que refieren, en particular, a la cantidad de tiempo destinado al trabajo en sus distintas formas y/o actividades, a lo largo de una jornada. A tales efectos, consideramos pertinente rastrear la proporción de personas que, en el día de la encuesta, se encontraban en un día laborable, o bien no laborable. En este sentido,obtuvimos un resultado equilibrado entre ambas respuestas: 48% de los encuestados respondió que se encontraba en un día laborable, mientras que el 52% restante no. 
-
-Ahora bien, realizamos un análisis ulterior del universo de personas encuestadas, a los efectos de preparar el terreno para el abordaje de las hipótesis subsiguientes. Se decidió estudiar por separado cuáles fueron las respuestas según cada sexo: del universo de las mujeres encuestadas, el 42,2% se hallaba en un día laborable, mientras el 57,8% no. Por el contrario, dentro del relevamiento del sexo masculino, el  56% se encontraba en un día laborable, y el restante 44% no. 
-
-Finalmente, se decidió hacer un último recorte del universo de ocupados, y obtuvimos que la cantidad de varones ocupados encuestados en un día laborable superaba a la cantidad de mujeres en esa misma condición (72% vs 67,2%).
-
-
-
-```{r}
-##Exploramos los datos de uso del tiempo relacionados al trabajo remunerado y no remunerado
-
-datos_uso_tiempo %>%
-  summarise(prom_trabajo_pago = mean(trabajo_pago)) %>% 
-  gt(caption = "Promedio de horas dedicadas al trabajo pago") %>% 
-  cols_label(prom_trabajo_pago = "Trabajo pago") %>%
-  cols_align(align = "center",
-             columns = prom_trabajo_pago) %>% 
-  fmt_number(columns = prom_trabajo_pago, 
-             decimals = 1, 
-             dec_mark = ",", 
-             sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", 
-                                      weight = px(3)),
-            cell_text(weight = "bold")))  
-
-datos_uso_tiempo %>% 
-  group_by (sexo) %>% 
-  summarise(prom_trabajo_pago=mean(trabajo_pago)) %>% 
-  gt (caption = "Promedio de horas dedicadas al trabajo pago según sexo") %>% 
-  cols_label(sexo = "Sexo", 
-             prom_trabajo_pago = "Trabajo pago") %>% 
-  cols_align(align = "center",
-             columns = prom_trabajo_pago) %>% 
-  fmt_number(columns = c(prom_trabajo_pago), 
-             decimals = 1, 
-             dec_mark = ",", 
-             sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", 
-                                      weight = px(3)),
-            cell_text(weight = "bold")))  
-
-datos_uso_tiempo %>% 
-  summarise(prom_trabajo_no_pago = mean(trabajo_domestico_no_pago)) %>% 
-  gt (caption = "Promedio de horas dedicadas al trabajo doméstico no pago") %>% 
-  cols_label(prom_trabajo_no_pago = "Trabajo doméstico no pago") %>% 
-  cols_align(align = "center",
-             columns = prom_trabajo_no_pago) %>% 
-  fmt_number(columns = c(prom_trabajo_no_pago), 
-             decimals = 1, 
-             dec_mark = ",", 
-             sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", 
-                                      weight = px(3)),
-            cell_text(weight = "bold")))  
-
-datos_uso_tiempo %>% 
-  group_by (sexo) %>% 
-  summarise(prom_trabajo_no_pago = mean(trabajo_domestico_no_pago)) %>% 
-  gt (caption = "Promedio de horas dedicadas al trabajo doméstico no pago según sexo") %>% 
-  cols_label(sexo = "Sexo", prom_trabajo_no_pago = "Trabajo doméstico no pago") %>%
-  cols_align(align = "center",
-             columns = prom_trabajo_no_pago) %>% 
-  fmt_number(columns = c(prom_trabajo_no_pago), 
-             decimals = 1, dec_mark = ",", 
-             sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", 
-                                      weight = px(3)),
-            cell_text(weight = "bold")))
-
-```
-
-## Descripción de los datos del uso del tiempo relacionados al trabajo remunerado y no remunerado
-
-Cómo era esperable, al analizar la variable _trabajo_pago_ en relación al sexo de la persona encuestada se observa un aumento en la cantidad de horas trabajadas por aquellos identificados como varones. Por el contrario, en la variable _trabajo_domestico_no_pago_ ocurre el proceso inverso; al realizar el cruce por la variable _sexo_ aumenta la cantidad de horas que las mujeres dedican a estas tareas y disminuyen las que los hombres dedican. Esta es una línea de análisis que profundizaremos en las hipótesis.
 
 
 ## Hipótesis
@@ -280,34 +60,6 @@ Para esta última hipótesis pensábamos utilizar la variable _quintil_ingeso_ d
 Para la entrega final del Trabajo Práctico procedemos a analizar los datos para comenzar a dar respuesta a las hipótesis planteadas.
 
 ## Hipótesis 1
-
-```{r}
-datos_uso_tiempo %>%  
-  select(dia_laborable, trabajo_pago, recreacion)  %>%  
-  pivot_longer(cols = c(trabajo_pago, recreacion), 
-               names_to = "actividad", values_to = "horas")  %>%  
-  group_by(dia_laborable, actividad) %>%  
-  summarise(horas = mean(horas))
-```
-
-```{r}
-datos_uso_tiempo %>% 
-  select(dia_laborable, trabajo_pago, recreacion)  %>%
-  group_by(dia_laborable) %>% 
-  summarise(horas_trabajadas = mean (trabajo_pago),
-            horas_recreacion = mean (recreacion)) %>% 
-  gt(caption = "Promedio de horas dedicas al trabajo pago y a recreación según jornada laborable") %>% 
-  cols_label(dia_laborable = "Jornada", horas_trabajadas = "Trabajo remunerado",
-             horas_recreacion = "Recreacion") %>% 
-  fmt_number(columns = c(horas_trabajadas, horas_recreacion),
-             decimals = 1, dec_mark = ",", sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", weight = px(3)),
-            cell_text(weight = "bold")))
-```
-
-
-Como era de esperar, en los días laborables el promedio de horas trabajadas se ubica entre las 8 y las 9 horas, en estos días, las horas de recreación son cercanas a las 2 horas. En cambio, en los días no laborables, las horas trabajadas se reducen prácticamente a 0, mientras que las horas de recreación se duplican con respecto a los días laborales. Se corrobora, por lo tanto, la correlación inicialmente planteada. 
 
 ## Construimos nuevas variables para ver como se reparte la población de acuerdo a la cantidad de horas trabajadas y las dedicadas a la recreación
 
@@ -360,8 +112,9 @@ datos_uso_tiempo %>%
   scale_color_discrete(name = "Sexo") +
   labs(title = "Gráfico 2 - Correlación entre horas dedicadas al trabajo pago y a recreación
        en días laborables según sexo", 
-       x = "Sexo", 
-       y = "%")
+       x = "Horas dedicadas al trabajo pago", 
+       y = "Horas dedicadas a recreación") +
+  facet_wrap("sexo")
 ```
 
 El gráfico 2 logra plasmar el diagnóstico anterior: se observa una correlación inversa entre cantidad de horas trabajadas y tiempo dedicado a la recreación, tanto en mujeres como en varones.
@@ -391,7 +144,7 @@ Tal como fuera adelantado en el análisis preliminar de datos, se decidió tomar
 
 ```{r}
 datos_uso_tiempo %>%
-  filter(sexo == "Varon", dia_laborable == "Día laborable") %>% 
+  filter(dia_laborable == "Día laborable") %>% 
   mutate(tdnp_cuidados = trabajo_domestico_no_pago + tareas_cuidados) %>% 
   ggplot(aes(trabajo_pago, tdnp_cuidados))+
   geom_jitter(aes(color = sexo)) +
@@ -400,19 +153,8 @@ datos_uso_tiempo %>%
   labs(title = "Gráfico 3 - Correlación entre horas dedicadas al trabajo pago y a trabajo
        doméstico no pago y tareas de cuidados - Varones", 
        x = "Trabajo pago", 
-       y = "Trabajo doméstico y tareas de cuidados")
-
-datos_uso_tiempo %>%
-  filter(sexo == "Mujer", dia_laborable == "Día laborable") %>% 
-  mutate(tdnp_cuidados = trabajo_domestico_no_pago + tareas_cuidados) %>% 
-  ggplot(aes(trabajo_pago, tdnp_cuidados))+
-  geom_jitter(aes (color = sexo)) +
-  scale_color_discrete(name = "Sexo") +
-  geom_smooth(method = lm) +
-  labs(title = "Gráfico 4 - Correlación entre horas dedicadas al trabajo pago y a trabajo
-       doméstico no pago y tareas de cuidados - Mujeres", 
-       x = "Trabajo pago", 
-       y = "Trabajo doméstico y tareas de cuidados")
+       y = "Trabajo doméstico y tareas de cuidados")+
+  facet_wrap("sexo")
   
 ```
 
