@@ -68,8 +68,9 @@ datos_uso_tiempo <- datos_uso_tiempo %>%
     trabajo_pago < 8 & recreacion >= 2 ~ 3,
     trabajo_pago >= 8 & recreacion < 1 ~ 4,
     trabajo_pago >= 8 & recreacion >= 1 & recreacion < 2 ~ 5,
-    trabajo_pago >= 8 & recreacion >= 2 ~ 6
+    trabajo_pago >= 8 & recreacion >= 2 ~ 6,
   ))
+
 
 datos_uso_tiempo %>% 
   group_by(sexo, trabajo_recreacion) %>% 
@@ -77,14 +78,42 @@ datos_uso_tiempo %>%
   group_by(sexo) %>% 
   mutate(prop = n/sum(n)*100) %>%
   mutate(prop = round(prop, digits = 1)) %>% 
-  ggplot(aes(sexo, prop)) +
-  geom_col(aes(width = 0.5, fill = factor(trabajo_recreacion))) +
-  geom_text(aes(label = prop, group = factor(trabajo_recreacion)), position = position_stack(0.5)) +
-  scale_fill_discrete(name = "Trabajo y recreación") +
-  labs(title = "Proporción de hombres y mujeres según tiempo dedicado a trabajo
-       y recreación en días laborables", 
+  ggplot(aes(sexo, prop, fill = factor(trabajo_recreacion))) +
+  geom_bar(width = 0.5, color="gray34", stat='identity', position = "stack") +
+  scale_fill_brewer(palette = "PuBuGn", name = "Trabajo y recreación") +
+  geom_text(aes(label = prop, group = factor(trabajo_recreacion)),size = 3, weight = "bold", position = position_stack(0.5)) +
+  labs(title = "Tiempo dedicado a trabajo y recreación en días laborables, \n según sexo",
+       subtitle = "(en %)",
        x = "Sexo", 
-       y = "%")
+       y = "%",
+       size = 3,
+       color = "Trabajo y recreación", 
+       shape = "Trabajo y recreación") +
+  theme(plot.title = element_text(hjust = 0.5, 
+                                  lineheight = 0.9, 
+                                  size = 12, 
+                                  face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5),
+        legend.position = "right")
+
+
+
+
+ggplot(datos_uso_tiempo, aes(trabajo_pago)) +
+  geom_histogram(aes(color=sexo), fill = "white", alpha = 0.15, position = "stack")
+
+ggplot(datos_uso_tiempo, aes(prop)) +
+  geom_density(aes(color=sexo))
+
+ggplot(datos_uso_tiempo, aes(x = trabajo_pago, y = recreacion)) +
+  geom_point(aes(color = sexo, shape = sexo), size = 2) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  scale_x_continuous(limits = c(0, 15), breaks = seq(0, 15, 3), expand = c(0, 1)) +
+  scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 3), expand = c(0, 1)) +
+  scale_color_brewer(palette = "Paired")+
+  facet_grid("sexo")
+
+
 ```
 
 Cuando desglosamos el análisis anterior según sexo, se observa que un 35% de las mujeres y los varones (suma de los valores centrales de la variable "trabajo_recreación") se alinean según los resultados promedio obtenidos previamente: alrededor de las 8 horas trabajadas, y menos 2 hs de recreación. 
@@ -101,14 +130,22 @@ datos_uso_tiempo %>%
   filter(dia_laborable == "Día laborable") %>% 
   mutate(tdnp_cuidados = trabajo_domestico_no_pago + tareas_cuidados) %>% 
   ggplot(aes(trabajo_pago, tdnp_cuidados))+
-  geom_jitter(aes(color = sexo)) +
-  geom_smooth(method = lm) +
-  scale_color_discrete(name = "Sexo") +
-  labs(title = "Gráfico 3 - Correlación entre horas dedicadas al trabajo pago y a trabajo
-       doméstico no pago y tareas de cuidados - Varones", 
-       x = "Trabajo pago", 
-       y = "Trabajo doméstico y tareas de cuidados")+
-  facet_wrap("sexo")
+  geom_point(aes(color = sexo, shape = sexo), size = 2) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  scale_x_continuous(limits = c(0, 15), breaks = seq(0, 15, 3), expand = c(0, 1)) +
+  scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 3), expand = c(0, 1)) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(title = "Correlación entre horas dedicadas al trabajo pago (TP), y al trabajo
+       doméstico no pago (TDNP) y tareas de cuidados (TDC)",
+       subtitle = "Según sexo",
+       x = "Hs. dedicadas al TP", 
+       y = "Hs. dedicadas al TDNP y TDC") +
+       theme(plot.title = element_text(hjust = 0.5, 
+                                  size = 12, 
+                                  face = "bold"),
+             plot.subtitle = element_text(hjust = 0.5)) +
+  facet_grid("sexo")
+
   
 ```
 
@@ -133,6 +170,10 @@ horas_segun_nivel_educativo <- datos_uso_tiempo %>%
             total_horas = mean(trabajo_pago + trabajo_domestico_no_pago)) %>%
   arrange(horas_trabajo_rem)
 
+
+```
+
+```{r}
 max_horas_trabajadas <- max(horas_segun_nivel_educativo$horas_trabajo_rem)
 max_horas_trabajo_domestico <- max(horas_segun_nivel_educativo$horas_trabajo_domestico)
 
@@ -201,6 +242,7 @@ horas_segun_nivel_educativo |>
     table.border.bottom.width = px(3)
   )
 ```
+
 
 Corroborada la hipótesis que verifica que los varones destinan en promedio más horas que las mujeres al trabajo remunerado, y las mujeres destinan más horas al trabajo doméstico no pago, se busca estudiar en esta última instancia si existe una relación inversa entre el nivel educativo y la brecha entre trabajo pago y no pago, y si dicha relación se profundiza según sexo.
 
