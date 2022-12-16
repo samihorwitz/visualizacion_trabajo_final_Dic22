@@ -1,11 +1,16 @@
 ---
 title: "TP1_Grupo-7"
-author: "SH-MRM"
-output: html_document
+author: "sAMANTHA HORWITZ - MATÍAS RODRIGUEZ MENDOZA"
+output: 
+  html_document:
+    code_folding: hide
+    code_download: TRUE
+    toc: TRUE
+    toc_float: TRUE
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 # Cargar los paquetes necesarios acá
 library(readr)
 library(dplyr)
@@ -34,41 +39,24 @@ datos_uso_tiempo <- read_csv("datos/encuesta_uso_tiempo_2016.csv",
                              locale = locale(encoding = "ISO-8859-1"))
 ```
 
-
-## Hipótesis
-
-_Hipótesis 1_
-
-Como afirmamos anteriormente nuestro interés principal reside en el estudio del tiempo dedicado a tareas laborales. En primer lugar, queremos observar si, en un día laborable, existe correlación entre la cantidad de horas dedicadas al trabajo y la realización de actividades recreativas y de cuidado personal.
-
-
-_Hipótesis 2_
-
-Como segunda hipótesis, nos interesa corroborar si la cantidad de horas destinadas a tareas de cuidado tiene correlación directa con la cantidad de horas que se dedican al trabajo no remunerado, y si esta relación, además, es más sensible según el sexo. 
-
-_Hipótesis 3_
-
-Partiendo del supuesto general -y corroborado en los análisis previos- que los varones dedican más horas que las mujeres al trabajo remunerado, mientras que la media de horas de trabajo doméstico no pago es mayor en mujeres que en varones, consideramos que esto no describe con fidelidad el fenómeno actual. Con lo cual, se buscará verificar -a partir del planteo de la tercera hipótesis- la relación inversa que existe entre el nivel de ingreso de los hogares, y la brecha entre la media de horas de trabajadas (remuneradas y no remuneradas). Dicho de otra forma, se intuye que a medida que aumenta el nivel de ingreso de los hogares, el tiempo dedicado a trabajo remunerado y no remunerado por hombres y mujeres se va equiparado.
-
-_Nota metodológica: dato anómalo_
-
-Para esta última hipótesis pensábamos utilizar la variable _quintil_ingeso_ del dataset que registra a qué quintil pertenece cada hogar. Sin embargo al indagar sobre los datos descubrimos que en todos los registros figura la categoría **5to Quintil** lo cuál no sólo es es metodológicamente incorrecto, sino que advertimos que podría ser una anomalía de la base de datos, por lo que el presunto error condicionó nuestra línea investgativa. En ese marco, decidimos sortear el problema utilizando la variable _nivel_educativo_ como proxy de análisis del nivel de ingresos del hogar y de la persona encuestada.
-
-
-## Entrega Final
-
-Para la entrega final del Trabajo Práctico procedemos a analizar los datos para comenzar a dar respuesta a las hipótesis planteadas.
-
 ## Hipótesis 1
 
-## Construimos nuevas variables para ver como se reparte la población de acuerdo a la cantidad de horas trabajadas y las dedicadas a la recreación
+Nuestro interés principal reside en el estudio del tiempo dedicado a tareas laborales. En primer lugar, queremos observar si, en un día laborable, existe correlación entre la cantidad de horas dedicadas al trabajo y la realización de actividades recreativas y de cuidado personal.
+
+Para poder observar esta situación construimos nuevas variables para ver como se reparte la población de acuerdo a la cantidad de horas trabajadas y las dedicadas a la recreación
 
 Las categorías estarán armadas de la siguiente manera:
+
 Menos de 8 horas trabajadas y menos de una hora de recreación -> 1
+
 Menos de 8 horas trabajadas y entre 1 y dos horas de recración -> 2
-Menos de 8 hoaras trabajadas y 2 o más horas de recreación -> 3
+
+Menos de 8 horas trabajadas y 2 o más horas de recreación -> 3
+
 8 horas o más trabajadas y menos de una hora de recreación -> 4
+
 8 horas o más trabajadas y entre 1 y dos horas de recración -> 5
+
 8 horas o más trabajadas y 2 o más horas de recreación -> 6
 
 ```{r}
@@ -106,6 +94,8 @@ Sin embargo, llama la atención los valores extremos: los varones trabajan más 
 
 ## Hipótesis 2
 
+Como segunda hipótesis, nos interesa corroborar si la cantidad de horas destinadas a tareas de cuidado tiene correlación directa con la cantidad de horas que se dedican al trabajo no remunerado, y si esta relación, además, es más sensible según el sexo.
+
 ```{r}
 datos_uso_tiempo %>%
   filter(dia_laborable == "Día laborable") %>% 
@@ -127,39 +117,81 @@ Los **gráficos 3 y 4** ilustran la conclusión anteriormente alcanzada: si bien
 
 ## Hipótesis 3
 
-```{r}
-datos_uso_tiempo %>% 
-  filter(dia_laborable == "Día laborable") %>% 
-  select(sexo, trabajo_domestico_no_pago, trabajo_pago) %>%  
-  group_by(sexo) %>%  
-  summarise(horas_trabajo_rem = mean(trabajo_pago), 
-            horas_trabajo_domestico = mean(trabajo_domestico_no_pago),
-            total_horas = mean(trabajo_pago + trabajo_domestico_no_pago)) %>%
-  gt(caption = "Horas dedicadas al trabajo doméstico no pago y tareas de cuidado según sexo") %>% 
-  cols_label(sexo = "Sexo", horas_trabajo_domestico = "Trabajo doméstico no pago",
-             horas_trabajo_rem = "Trabajo remunerado", total_horas = "Total de horas") %>% 
-  fmt_number(columns = c(horas_trabajo_domestico, horas_trabajo_rem, total_horas),
-             decimals = 1, dec_mark = ",", sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", weight = px(3)),
-            cell_text(weight = "bold")))
+Partiendo del supuesto general -y corroborado en los análisis previos- que los varones dedican más horas que las mujeres al trabajo remunerado, mientras que la media de horas de trabajo doméstico no pago es mayor en mujeres que en varones, consideramos que esto no describe con fidelidad el fenómeno actual. Con lo cual, se buscará verificar -a partir del planteo de la tercera hipótesis- la relación inversa que existe entre el nivel de ingreso de los hogares, y la brecha entre la media de horas de trabajadas (remuneradas y no remuneradas). Dicho de otra forma, se intuye que a medida que aumenta el nivel de ingreso de los hogares, el tiempo dedicado a trabajo remunerado y no remunerado por hombres y mujeres se va equiparado.
 
-datos_uso_tiempo %>%
+_Nota metodológica: dato anómalo_
+
+Para esta última hipótesis pensábamos utilizar la variable _quintil_ingeso_ del dataset que registra a qué quintil pertenece cada hogar. Sin embargo al indagar sobre los datos descubrimos que en todos los registros figura la categoría **5to Quintil** lo cuál no sólo es es metodológicamente incorrecto, sino que advertimos que podría ser una anomalía de la base de datos, por lo que el presunto error condicionó nuestra línea investgativa. En ese marco, decidimos sortear el problema utilizando la variable _nivel_educativo_ como proxy de análisis del nivel de ingresos del hogar y de la persona encuestada.
+
+```{r}
+horas_segun_nivel_educativo <- datos_uso_tiempo %>%
   filter(dia_laborable == "Día laborable") %>% 
   select(sexo, trabajo_pago, trabajo_domestico_no_pago, nivel_educativo)  %>%  
   group_by(sexo, nivel_educativo) %>%  
   summarise(horas_trabajo_rem = mean(trabajo_pago), 
             horas_trabajo_domestico = mean(trabajo_domestico_no_pago),
             total_horas = mean(trabajo_pago + trabajo_domestico_no_pago)) %>%
-  arrange(horas_trabajo_rem) %>% 
-  gt(caption = "Horas dedicadas al trabajo remunerado y al trabajo doméstico no pago según sexo y nivel educativo") %>% 
-  cols_label(nivel_educativo = "Sexo/Nivel educativo", horas_trabajo_domestico = "Trabajo doméstico no pago",
-             horas_trabajo_rem = "Trabajo remunerado", total_horas = "Total de horas") %>% 
-  fmt_number(columns = c(horas_trabajo_domestico, horas_trabajo_rem, total_horas),
-             decimals = 1, dec_mark = ",", sep_mark = ".") %>% 
-  tab_style(locations = cells_column_labels(columns = everything()),
-            style = list(cell_borders(sides = "bottom", weight = px(3)),
-            cell_text(weight = "bold"))) ## %>% 
+  arrange(horas_trabajo_rem)
+
+max_horas_trabajadas <- max(horas_segun_nivel_educativo$horas_trabajo_rem)
+max_horas_trabajo_domestico <- max(horas_segun_nivel_educativo$horas_trabajo_domestico)
+
+horas_segun_nivel_educativo |> 
+  gt() |> 
+  tab_header(
+    title = md("**Horas dedicadas al trabajo remunerado y al trabajo doméstico no pago**"),
+    subtitle = md("**Según sexo y nivel educativo**")
+  ) |> 
+  cols_label(
+    nivel_educativo = "Sexo/Nivel educativo", 
+    horas_trabajo_domestico = "Trabajo doméstico no pago",
+    horas_trabajo_rem = "Trabajo remunerado", total_horas = "Total de horas"
+    )  |>
+  tab_source_note(
+    source_note = "Fuente: Elaboración propia en base a la Encuesta de Uso del Tiempo 2016
+    del GCBA"
+   ) |> 
+  fmt_number(
+    columns = c(horas_trabajo_domestico, horas_trabajo_rem, total_horas),
+    decimals = 1, 
+    dec_mark = ",", 
+    sep_mark = "."
+  ) |> 
+  tab_style(
+    style = list(
+      cell_text(color = "darkred", weight = "bold")
+    ),
+    locations = cells_body(
+      columns = horas_trabajo_rem,
+      rows = horas_trabajo_rem == max_horas_trabajadas
+    )
+  ) |> 
+  tab_style(
+    style = list(
+      cell_text(color = "darkred", weight = "bold")
+    ),
+    locations = cells_body(
+      columns = horas_trabajo_domestico,
+      rows = horas_trabajo_domestico == max_horas_trabajo_domestico
+    )
+  ) |> 
+  cols_align(
+    align = "left",
+    columns = nivel_educativo
+  ) |>
+  cols_align(
+    align = "center",
+    columns = c(horas_trabajo_rem, horas_trabajo_domestico, total_horas)
+  ) |> 
+  tab_options(
+    column_labels.border.top.color = "white",
+    column_labels.border.top.width = px(3),
+    column_labels.border.bottom.color = "black",
+    table.border.top.color = "white",
+    table.border.top.width = px(3),
+    table.border.bottom.color = "white",
+    table.border.bottom.width = px(3)
+  )
 ```
 
 Corroborada la hipótesis que verifica que los varones destinan en promedio más horas que las mujeres al trabajo remunerado, y las mujeres destinan más horas al trabajo doméstico no pago, se busca estudiar en esta última instancia si existe una relación inversa entre el nivel educativo y la brecha entre trabajo pago y no pago, y si dicha relación se profundiza según sexo.
