@@ -1,6 +1,6 @@
 ---
 title: "TP1_Grupo-7"
-author: "sAMANTHA HORWITZ - MATÍAS RODRIGUEZ MENDOZA"
+author: "SAMANTHA HORWITZ - MATÍAS RODRIGUEZ MENDOZA"
 output: 
   html_document:
     code_folding: hide
@@ -173,6 +173,14 @@ horas_segun_nivel_educativo |>
     locations = cells_body(
       columns = horas_trabajo_domestico,
       rows = horas_trabajo_domestico == max_horas_trabajo_domestico
+    )
+  ) |> 
+  tab_style(
+    style = list(
+      cell_text(indent = px(10))
+    ),
+    locations = cells_body(
+      columns = nivel_educativo
     )
   ) |> 
   cols_align(
