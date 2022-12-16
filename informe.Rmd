@@ -1,5 +1,5 @@
 ---
-title: "TP1_Grupo-7"
+title: "Trabajo Final - Visualización de la Información"
 author: "SAMANTHA HORWITZ - MATÍAS RODRIGUEZ MENDOZA"
 output: 
   html_document:
@@ -7,6 +7,7 @@ output:
     code_download: TRUE
     toc: TRUE
     toc_float: TRUE
+    theme: united
 ---
 
 ```{r setup, include=FALSE}
@@ -100,17 +101,21 @@ datos_uso_tiempo %>%
 
 
 ggplot(datos_uso_tiempo, aes(trabajo_pago)) +
-  geom_histogram(aes(color=sexo), fill = "white", alpha = 0.15, position = "stack")
-
-ggplot(datos_uso_tiempo, aes(prop)) +
-  geom_density(aes(color=sexo))
+  geom_histogram(aes(color=sexo), fill = "white", alpha = 0.15, position = "stack") +
+  labs(title = "Personas según cantidad de horas trabajadas por sexo",
+       x = "Horas trabajadas",
+       y = "Cantidad de personas")
 
 ggplot(datos_uso_tiempo, aes(x = trabajo_pago, y = recreacion)) +
   geom_point(aes(color = sexo, shape = sexo), size = 2) +
   geom_smooth(method = "lm", se = FALSE, color = "black") +
   scale_x_continuous(limits = c(0, 15), breaks = seq(0, 15, 3), expand = c(0, 1)) +
   scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 3), expand = c(0, 1)) +
-  scale_color_brewer(palette = "Paired")+
+  scale_color_brewer(palette = "Paired") + 
+  labs(title = "Correlación entre horas trabajadas y horas dedicadas a recreación",
+       subtitle = "Según sexo",
+       x = "Horas trabajadas",
+       y = "Cantidad de personas") +
   facet_grid("sexo")
 
 
@@ -149,7 +154,7 @@ datos_uso_tiempo %>%
   
 ```
 
-Los **gráficos 3 y 4** ilustran la conclusión anteriormente alcanzada: si bien se verifica la correlación directa entre cantidad de horas dedicadas al trabajo doméstico no pago y horas dedicadas a tareas de cuidado en ambos sexos, dicha correlación es más estrecha para el caso de las mujeres. 
+El gráfico representa la conclusión anteriormente alcanzada: si bien se verifica la correlación directa entre cantidad de horas dedicadas al trabajo doméstico no pago y horas dedicadas a tareas de cuidado en ambos sexos, dicha correlación es más estrecha para el caso de las mujeres. 
 
 
 ## Hipótesis 3
@@ -246,42 +251,4 @@ horas_segun_nivel_educativo |>
 
 Corroborada la hipótesis que verifica que los varones destinan en promedio más horas que las mujeres al trabajo remunerado, y las mujeres destinan más horas al trabajo doméstico no pago, se busca estudiar en esta última instancia si existe una relación inversa entre el nivel educativo y la brecha entre trabajo pago y no pago, y si dicha relación se profundiza según sexo.
 
-Si bien el rango de valores de la variable "nivel_educativo" no distingue entre terminación o no de la primaria, ni tampoco releva información sobre finalización de posgrados, los datos permiten acceder a conclusiones interesantes: tanto en hombres como en mujeres la cantidad de horas dedicadas al trabajo remuerado aumenta acorde al nivel educativo alcanzado. No obstante, existe una brecha de género, al estudiar en términos absolutos la cantidad de horas que los hombres y las mujeres le dedican al trabajo remunerado respecto al doméstico no pago. 
-
-
-```{r}
-datos_uso_tiempo %>%
-  filter(dia_laborable == "Día laborable") %>% 
-  select(sexo, trabajo_pago, trabajo_domestico_no_pago, nivel_educativo)  %>%  
-  group_by(sexo, nivel_educativo) %>%  
-  mutate(horas_trabajo_rem = mean(trabajo_pago)) %>% 
-  ggplot(aes(nivel_educativo, horas_trabajo_rem)) +
-  geom_line(aes(group = sexo, color=sexo)) +
-  geom_point(aes(color=sexo)) +
-  scale_color_discrete(name = "Sexo") +
-  scale_x_discrete(limits = c("Secundario incompleto", "Secundario completo/Superior incompleto", "Superior completo")) +
-  scale_y_continuous(limits = c(5, 10)) +
-  labs(title = "Gráfico 5 - Horas dedicadas al trabajo pago según nivel educativo según sexo", 
-       x = "Nivel educativo", 
-       y = "Cantidad de horas")  
-
-datos_uso_tiempo %>%
-  filter(dia_laborable == "Día laborable") %>% 
-  select(sexo, trabajo_pago, trabajo_domestico_no_pago, nivel_educativo)  %>%  
-  group_by(sexo, nivel_educativo) %>%  
-  mutate(horas_trabajo_no_rem = mean(trabajo_domestico_no_pago)) %>% 
-  ggplot(aes(nivel_educativo, horas_trabajo_no_rem)) +
-  geom_line(aes(group = sexo, color=sexo)) +
-  geom_point(aes(color=sexo)) +
-  scale_color_discrete(name = "Sexo") +
-  scale_x_discrete(limits = c("Secundario incompleto", "Secundario completo/Superior incompleto", "Superior completo")) +
-  scale_y_continuous(limits = c(0, 4)) +
-  labs(title = "Gráfico 6 - Horas dedicadas al trabajo doméstico no pago
-       según nivel educativo según sexo", 
-       x = "Nivel educativo", 
-       y = "Cantidad de horas") 
-```
-
-El **gráfico 5** demuestra la relación directa que existe entre cantidad de horas destinadas al trabajo pago conforme aumenta el nivel educativo alcanzado, tanto en varones como en mujeres. Dicha relación se invierte al estudiar las horas dedicadas al trabajo doméstico no pago respecto al nivel educativo alcanzado, tal como se desprende del **gráfico 6**. 
-
-Ahora bien, de los gráficos 5 y 6 se confirma también la brecha de género verificada en hipótesis anteriores, que se recrudece del análisis de este último cruce de datos: quienes más horas dedican al trabajo remunerado son los hombres con nivel educativo superior completo, mientras que las mujeres con secundario incompleto son quienes más horas destinan al trabajo doméstico no pago. 
+Si bien el rango de valores de la variable "nivel_educativo" no distingue entre terminación o no de la primaria, ni tampoco releva información sobre finalización de posgrados, los datos permiten acceder a conclusiones interesantes: tanto en hombres como en mujeres la cantidad de horas dedicadas al trabajo remuerado aumenta acorde al nivel educativo alcanzado. No obstante, existe una brecha de género, al estudiar en términos absolutos la cantidad de horas que los hombres y las mujeres le dedican al trabajo remunerado respecto al doméstico no pago.
