@@ -98,14 +98,6 @@ datos_uso_tiempo %>%
         legend.position = "right")
 
 
-
-
-ggplot(datos_uso_tiempo, aes(trabajo_pago)) +
-  geom_histogram(aes(color=sexo), fill = "white", alpha = 0.15, position = "stack") +
-  labs(title = "Personas según cantidad de horas trabajadas por sexo",
-       x = "Horas trabajadas",
-       y = "Cantidad de personas")
-
 ggplot(datos_uso_tiempo, aes(x = trabajo_pago, y = recreacion)) +
   geom_point(aes(color = sexo, shape = sexo), size = 2) +
   geom_smooth(method = "lm", se = FALSE, color = "black") +
